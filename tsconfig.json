@@ -1,0 +1,33 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "esModuleInterop": true,
+        "strict": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "paths": {
+            "@imperio/db": [
+                "./packages/db/src"
+            ],
+            "@imperio/shared-types": [
+                "./packages/shared-types/src"
+            ],
+            "@imperio/config": [
+                "./packages/config/src"
+            ],
+            "@imperio/ui": [
+                "./packages/ui/src"
+            ]
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

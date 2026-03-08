@@ -1,0 +1,303 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────── Base Styles ───────────── */
+@layer base {
+  * {
+    @apply border-dark-700;
+  }
+
+  body {
+    @apply bg-dark-950 text-dark-100;
+  }
+
+  /* BotProspect module CSS variables */
+  :root {
+    --gold: #f59e0b;
+    --gold-dim: #b45309;
+    --surface: #0d0d0d;
+    --surface-2: #1a1a1a;
+    --surface-3: #2a2a2a;
+    --border: rgba(255, 255, 255, 0.07);
+    --border-accent: rgba(245, 158, 11, 0.25);
+    --text: #f0f0f0;
+    --text-muted: #888888;
+    --text-dim: #555555;
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --yellow: #eab308;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-dark-900;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-dark-600 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-dark-500;
+  }
+}
+
+/* ───────────── Component Classes ───────────── */
+@layer components {
+
+  /* Cards */
+  .card {
+    @apply bg-dark-850 border border-dark-700 rounded-xl p-5 transition-all duration-200;
+  }
+
+  .card:hover {
+    @apply border-dark-600;
+  }
+
+  .card-glass {
+    @apply bg-dark-850/60 backdrop-blur-xl border border-dark-700/50 rounded-xl p-5;
+  }
+
+  /* KPI Card */
+  .kpi-card {
+    @apply card flex flex-col gap-1;
+  }
+
+  .kpi-value {
+    @apply text-2xl font-bold text-white tracking-tight;
+  }
+
+  .kpi-label {
+    @apply text-xs font-medium text-dark-400 uppercase tracking-wider;
+  }
+
+  .kpi-change {
+    @apply text-xs font-semibold;
+  }
+
+  .kpi-change.positive {
+    @apply text-success;
+  }
+
+  .kpi-change.negative {
+    @apply text-danger;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn bg-imperio-600 text-white hover:bg-imperio-500 active:bg-imperio-700;
+  }
+
+  .btn-secondary {
+    @apply btn bg-dark-700 text-dark-200 hover:bg-dark-600 border border-dark-600;
+  }
+
+  .btn-danger {
+    @apply btn bg-danger/10 text-danger hover:bg-danger/20 border border-danger/20;
+  }
+
+  .btn-ghost {
+    @apply btn text-dark-400 hover:text-dark-200 hover:bg-dark-800;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .btn-xs {
+    @apply px-2 py-1 text-xs;
+  }
+
+  /* Input */
+  .input {
+    @apply w-full bg-dark-800 border border-dark-600 rounded-lg px-3 py-2 text-sm text-dark-100 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-imperio-600/50 focus:border-imperio-600 transition-all duration-200;
+  }
+
+  .input-sm {
+    @apply px-2.5 py-1.5 text-xs;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold;
+  }
+
+  .badge-cold {
+    @apply bg-blue-500/10 text-blue-400 border border-blue-500/20;
+  }
+
+  .badge-warm {
+    @apply bg-yellow-500/10 text-yellow-400 border border-yellow-500/20;
+  }
+
+  .badge-hot {
+    @apply bg-red-500/10 text-red-400 border border-red-500/20;
+  }
+
+  .badge-cooled {
+    @apply bg-gray-500/10 text-gray-400 border border-gray-500/20;
+  }
+
+  .badge-success {
+    @apply bg-success/10 text-success border border-success/20;
+  }
+
+  .badge-warning {
+    @apply bg-warning/10 text-warning border border-warning/20;
+  }
+
+  .badge-danger {
+    @apply bg-danger/10 text-danger border border-danger/20;
+  }
+
+  .badge-info {
+    @apply bg-info/10 text-info border border-info/20;
+  }
+
+  .badge-neutral {
+    @apply bg-dark-700 text-dark-300 border border-dark-600;
+  }
+
+  /* Table */
+  .table-wrapper {
+    @apply overflow-x-auto rounded-xl border border-dark-700;
+  }
+
+  .table {
+    @apply w-full text-sm;
+  }
+
+  .table th {
+    @apply px-4 py-3 text-left text-xs font-semibold text-dark-400 uppercase tracking-wider bg-dark-900;
+  }
+
+  .table td {
+    @apply px-4 py-3 border-t border-dark-800;
+  }
+
+  .table tr:hover td {
+    @apply bg-dark-800/50;
+  }
+
+  /* Sidebar */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-dark-400 hover:bg-dark-800 hover:text-dark-100 transition-all duration-150 cursor-pointer;
+  }
+
+  .sidebar-link.active {
+    @apply bg-imperio-600/10 text-imperio-400 border-l-2 border-imperio-500;
+  }
+
+  /* Tag */
+  .tag {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs bg-dark-700 text-dark-300;
+  }
+
+  /* Traction Score Colors */
+  .traction-accelerating {
+    @apply text-emerald-400;
+  }
+
+  .traction-stable {
+    @apply text-blue-400;
+  }
+
+  .traction-stagnant {
+    @apply text-yellow-400;
+  }
+
+  .traction-collapsing {
+    @apply text-red-400;
+  }
+
+  /* Kanban */
+  .kanban-column {
+    @apply flex flex-col gap-3 min-w-[280px] max-w-[320px] bg-dark-900 rounded-xl p-3;
+  }
+
+  .kanban-card {
+    @apply bg-dark-850 border border-dark-700 rounded-lg p-3 cursor-pointer hover:border-dark-500 transition-all duration-200;
+  }
+
+  /* Chat */
+  .chat-bubble {
+    @apply max-w-[75%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed;
+  }
+
+  .chat-bubble.inbound {
+    @apply bg-dark-800 text-dark-100 rounded-bl-md;
+  }
+
+  .chat-bubble.outbound {
+    @apply bg-imperio-600 text-white rounded-br-md;
+  }
+
+  /* Status dot */
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .status-dot.online {
+    @apply bg-success animate-pulse-slow;
+  }
+
+  .status-dot.offline {
+    @apply bg-danger;
+  }
+
+  .status-dot.reconnecting {
+    @apply bg-warning animate-pulse;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* ── BotProspect Utilities ── */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--surface-3);
+    border-radius: 2px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #444;
+  }
+
+  .font-display {
+    font-family: 'DM Serif Display', Georgia, serif;
+  }
+
+  .gold-glow {
+    box-shadow: 0 0 0 1px var(--border-accent), 0 0 20px rgba(245, 158, 11, 0.08);
+  }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+  }
+}

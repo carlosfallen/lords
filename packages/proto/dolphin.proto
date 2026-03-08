@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package dolphin;
+
+// Ensure package names for Go and Rust logic 
+option go_package = "./pb";
+
+service CognitiveEngine {
+  // Sends a WhatsApp message from Gateway (Go) -> Motor (Rust)
+  rpc ProcessMessage(IncomingMessage) returns (ProcessStatus);
+}
+
+service GatewayControl {
+  // Command from Motor (Rust) -> Gateway (Go) to dispatch an outbound message
+  rpc SendMessage(OutboundMessage) returns (DispatchStatus);
+}
+
+message IncomingMessage {
+  string phone_id = 1;      // "5511999999999"
+  string text = 2;          // The raw text from WA
+  int64 timestamp = 3;      // Unix timestamp
+  string message_id = 4;    // WA Message ID
+  string tenant_id = 5;     // Added for isolation
+}
+
+message ProcessStatus {
+  bool received = 1;        // Ack back to Go
+  string trace_id = 2;      // Tracing ID for logs
+}
+
+message OutboundMessage {
+  string phone_id = 1;      
+  string text = 2;
+  string tenant_id = 3;     // Added for isolation
+}
+
+message DispatchStatus {
+  bool success = 1;
+  string error_message = 2;
+}

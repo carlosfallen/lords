@@ -1,0 +1,23 @@
+# ============================================================
+# Cloudflare Tunnel — Local WhatsApp Gateway
+# ============================================================
+# This runs alongside the WhatsApp Gateway container
+# so the Cloudflare Worker API can reach it securely.
+#
+# Setup:
+# 1. Create tunnel: cloudflared tunnel create wa-gateway
+# 2. Add DNS: cloudflared tunnel route dns wa-gateway wa-gw.olipoli.shop
+# 3. Copy the tunnel credentials JSON to this directory
+# 4. Run: docker compose up -d
+
+tunnel: REPLACE_WITH_TUNNEL_ID
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  # WhatsApp Gateway API
+  - hostname: wa-gw.olipoli.shop
+    service: http://bot-gateway:8080
+    originRequest:
+      noTLSVerify: true
+  # Catch-all (required)
+  - service: http_status:404

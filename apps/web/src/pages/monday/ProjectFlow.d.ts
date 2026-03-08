@@ -1,0 +1,12 @@
+export function PFDashboard(): JSX.Element;
+export function PFProjects(): JSX.Element;
+export function PFKanban(): JSX.Element;
+export function PFTaskList(): JSX.Element;
+export function PFTimeline(): JSX.Element;
+export function PFTracker(): JSX.Element;
+export function PFWiki(): JSX.Element;
+export function PFMilestones(): JSX.Element;
+export function PFAutomations(): JSX.Element;
+export function PFReports(): JSX.Element;
+export function PFSettings(): JSX.Element;
+export default PFDashboard;

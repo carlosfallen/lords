@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imperio-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: imperio-api
+  template:
+    metadata:
+      labels:
+        app: imperio-api
+    spec:
+      containers:
+      - name: imperio-api
+        image: imperio-lord/api:latest
+        ports:
+        - containerPort: 4000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: imperio-secrets
+              key: DATABASE_URL
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: imperio-secrets
+              key: REDIS_URL
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: imperio-secrets
+              key: JWT_SECRET
+        - name: JWT_REFRESH_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: imperio-secrets
+              key: JWT_REFRESH_SECRET
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "256Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: imperio-api-svc
+spec:
+  selector:
+    app: imperio-api
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 4000
+  type: ClusterIP

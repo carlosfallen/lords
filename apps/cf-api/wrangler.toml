@@ -1,0 +1,30 @@
+# ============================================================
+# Lords CRM — Cloudflare Worker API Configuration
+# ============================================================
+name = "lords-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "lords-crm"
+database_id = "30a680bc-5fb4-429b-be9b-1dd6aa70c5ea"
+
+# Environment variables (set via wrangler secret or dashboard)
+[vars]
+ENVIRONMENT = "production"
+CORS_ORIGINS = "*"
+
+# WhatsApp Gateway Tunnel hostname
+WHATSAPP_GW_URL = "https://wa-gw.olipoli.shop"
+
+# Dev overrides
+[env.dev]
+name = "lords-api-dev"
+
+[env.dev.vars]
+ENVIRONMENT = "development"
+CORS_ORIGINS = "http://localhost:4173,http://localhost:4174"
+WHATSAPP_GW_URL = "http://localhost:8080"

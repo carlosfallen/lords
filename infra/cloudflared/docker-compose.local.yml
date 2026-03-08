@@ -1,0 +1,51 @@
+# ============================================================
+# Local Docker Compose — WhatsApp Gateway + Cloudflare Tunnel
+# ============================================================
+# Run this on the local machine when prospecting.
+# The WhatsApp Gateway + Tunnel will be reachable by the
+# Cloudflare Worker API at wa-gw.olipoli.shop.
+#
+# Usage: docker compose -f docker-compose.local.yml up -d
+
+services:
+  # ─── WhatsApp Gateway (Go) ─────────────────────────────────
+  bot-gateway:
+    build:
+      context: ../../apps/bot-gateway-go
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    networks:
+      - local-net
+
+  # ─── Redis (for local bot events) ──────────────────────────
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - local-net
+
+  # ─── Cloudflare Tunnel ─────────────────────────────────────
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./config.yml:/etc/cloudflared/config.yml:ro
+      - ./credentials.json:/etc/cloudflared/credentials.json:ro
+    depends_on:
+      - bot-gateway
+    networks:
+      - local-net
+
+networks:
+  local-net:
+    driver: bridge

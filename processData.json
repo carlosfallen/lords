@@ -1,0 +1,462 @@
+{
+    "meta": {
+        "cliente": "Everlog",
+        "segmento": "Sistema interno de prospecção via WhatsApp (Bot IA) com takeover humano e pipeline/kanban separado",
+        "versao": "v1.0",
+        "data": "2026-03-02",
+        "changelog": [
+            "v1.0: Emissão inicial do Mapa de Processos (AS-IS) a partir do Diagnóstico v1.1 (Code Audit) — BotProspect + Pipeline."
+        ],
+        "fontes": [
+            "Diagnóstico AS-IS (Code Audit) v1.1 — 02/03/2026",
+            "diagnosticSpec.json — 02/03/2026"
+        ]
+    },
+    "classificacao_nicho": {
+        "cnae_secao": "Não informado",
+        "tags_operacionais": [
+            "[N/A - produto interno de prospecção]"
+        ],
+        "descricao_operacional": "Importa leads (CSV), valida opt-in, enfileira e dispara cadência de mensagens via WhatsApp, com monitoramento em Inbox e takeover humano; pós-conversão em pipeline/kanban separado."
+    },
+    "lanes": [
+        "Lead (Prospect)",
+        "SDR/Operação Prospecção",
+        "Sistema (UI BotProspect)",
+        "Sistema (Backend/Orquestrador + IA)",
+        "WhatsApp Bridge (Z-API/Socket)",
+        "Gestão/Admin (Config/Personas/Chaves)",
+        "Pipeline/CRM (Kanban /pipeline)"
+    ],
+    "statuses": [
+        {
+            "code": "queued",
+            "label": "Enfileirado",
+            "desc": "Lead pronto para disparo pela fila"
+        },
+        {
+            "code": "active",
+            "label": "Ativo (Bot conversando)",
+            "desc": "Cadência rodando e trocando mensagens com o lead"
+        },
+        {
+            "code": "waiting_response",
+            "label": "Aguardando resposta",
+            "desc": "Bot aguardando retorno do lead ou condição de avanço"
+        },
+        {
+            "code": "human_takeover",
+            "label": "Takeover humano",
+            "desc": "Humano assume a conversa e o bot é pausado"
+        },
+        {
+            "code": "completed",
+            "label": "Concluído",
+            "desc": "Conversa encerrada com um desfecho"
+        },
+        {
+            "code": "wa_disconnected",
+            "label": "WhatsApp desconectado",
+            "desc": "Bridge/instância fora do ar; operação pode parar"
+        },
+        {
+            "code": "blocked_optin",
+            "label": "Bloqueado (sem opt-in)",
+            "desc": "Lead não pode ser disparado/enfileirado"
+        }
+    ],
+    "level1": [
+        {
+            "id": "L1-01",
+            "lane": "SDR/Operação Prospecção",
+            "title": "Preparar lista de leads (CSV) e importar",
+            "what": "Entrada do lote de leads no sistema (Nome, Empresa, Telefone, E-mail).",
+            "trigger": "SDR possui base/planilha de leads para prospecção.",
+            "action": "Acessar Prospecção > Operação/Prospect e importar CSV; validar que campos mínimos existem.",
+            "output": "Leads criados/atualizados no Banco de Contatos.",
+            "record": "Tabela contacts (insert/update) + metadata de import; index por telefone.",
+            "sla": "Operacional (depende do lote).",
+            "exceptions": [
+                {
+                    "id": "EX-CSV-01",
+                    "title": "CSV com dados faltantes/formatos inválidos",
+                    "condition": "Telefone/Nome ausentes ou formato incorreto",
+                    "action": "Rejeitar linha ou pedir correção do arquivo; reimportar",
+                    "record": "Log de import (se existir) ou anotação manual",
+                    "next": [
+                        "L1-01"
+                    ]
+                },
+                {
+                    "id": "EX-CSV-02",
+                    "title": "Duplicidade de leads",
+                    "condition": "Mesmo telefone/e-mail em múltiplas linhas (critério não confirmado)",
+                    "action": "Decidir regra de dedupe (por telefone como padrão) e consolidar",
+                    "record": "contacts: merge/update; manter rastreio do telefone como chave",
+                    "next": [
+                        "L1-02"
+                    ]
+                }
+            ],
+            "next": [
+                "L1-02"
+            ]
+        },
+        {
+            "id": "L1-02",
+            "lane": "Sistema (Backend/Orquestrador + IA)",
+            "title": "Saneamento e validação do contato (campos + dedupe)",
+            "what": "Garantir que contato é acionável e não quebra fila.",
+            "trigger": "Contato criado/atualizado após importação ou criação manual.",
+            "action": "Validar campos obrigatórios; normalizar telefone; aplicar regra de duplicidade (a confirmar).",
+            "output": "Contato apto para opt-in e enfileiramento.",
+            "record": "contacts: normalized_phone, updated_at; índices por telefone.",
+            "sla": "Imediato (automático).",
+            "exceptions": [
+                {
+                    "id": "EX-VAL-01",
+                    "title": "Contato inválido para prospecção",
+                    "condition": "Telefone não atende padrão WhatsApp",
+                    "action": "Marcar como inválido e retirar do lote de disparo",
+                    "record": "contacts: flag de invalidez (ou anotação)",
+                    "next": [
+                        "L1-01"
+                    ]
+                }
+            ],
+            "next": [
+                "L1-03"
+            ]
+        },
+        {
+            "id": "L1-03",
+            "lane": "Sistema (UI BotProspect)",
+            "title": "Checar Opt-in (trava operacional)",
+            "what": "Sem opt-in o bot não dispara e/ou não enfileira (conforme evidência).",
+            "trigger": "Contato aparece no Banco de Contatos.",
+            "action": "SDR filtra e garante que opt-in está ok antes de enfileirar/disparar.",
+            "output": "Contato liberado para fila OU bloqueado por compliance.",
+            "record": "contacts: status_opt_in (fonte/critério a confirmar).",
+            "sla": "Imediato (checagem).",
+            "exceptions": [
+                {
+                    "id": "EX-OPTIN-01",
+                    "title": "Lead sem opt-in",
+                    "condition": "opt-in = false",
+                    "action": "Bloquear enfileiramento/disparo; definir estratégia de captação de opt-in fora do bot",
+                    "record": "contacts: blocked_optin",
+                    "next": [
+                        "L1-10"
+                    ]
+                }
+            ],
+            "next": [
+                "L1-04"
+            ]
+        },
+        {
+            "id": "L1-04",
+            "lane": "SDR/Operação Prospecção",
+            "title": "Selecionar leads e enfileirar por campanha",
+            "what": "Cria itens de fila para o bot prospectar por cadência.",
+            "trigger": "Lead com opt-in válido e pronto para prospecção.",
+            "action": "Em Prospecção > Contatos: selecionar leads, escolher campanha, clicar Enfileirar.",
+            "output": "Leads entram em estado queued.",
+            "record": "queue_items: create; conversations (pré-criação se aplicável).",
+            "sla": "Operacional (minutos).",
+            "exceptions": [
+                {
+                    "id": "EX-QUEUE-01",
+                    "title": "Enfileiramento manual incompleto na aba Operação",
+                    "condition": "Operação não possui botão de enqueue apesar de existir handleEnqueue",
+                    "action": "Operador precisa alternar para a aba Contatos para enfileirar",
+                    "record": "Risco de falha humana por fragmentação do fluxo",
+                    "next": [
+                        "L1-04"
+                    ]
+                }
+            ],
+            "next": [
+                "L1-05"
+            ]
+        },
+        {
+            "id": "L1-05",
+            "lane": "SDR/Operação Prospecção",
+            "title": "Iniciar/Pausar fila de operação (Queue)",
+            "what": "Liga o motor de disparo para processar queue_items.",
+            "trigger": "Fila possui itens queued.",
+            "action": "Em Prospecção > Operação: clicar Iniciar (play) ou Pausar.",
+            "output": "Fila em andamento; leads passam a active conforme envio.",
+            "record": "queue_items: status update; whatsapp_status: conexão; eventos QUEUE_UPDATED.",
+            "sla": "Imediato (ação do operador).",
+            "exceptions": [
+                {
+                    "id": "EX-WA-01",
+                    "title": "WhatsApp desconectado (Z-API/bridge)",
+                    "condition": "Indicador de conexão acusa queda",
+                    "action": "Parar fila; revalidar token/instância; retomar quando WA_STATUS normalizar",
+                    "record": "whatsapp_status: disconnected; logs backend (se existirem)",
+                    "next": [
+                        "L1-05"
+                    ]
+                }
+            ],
+            "next": [
+                "L1-06"
+            ]
+        },
+        {
+            "id": "L1-06",
+            "lane": "Sistema (Backend/Orquestrador + IA)",
+            "title": "Disparo automático (cadência IA em 5 etapas)",
+            "what": "Bot envia mensagens e decide próximo step/intent em JSON.",
+            "trigger": "Queue item processado + WhatsApp conectado + opt-in ok.",
+            "action": "Gerar mensagem via playbook/persona + LLM; enviar via bridge; persistir mensagem e estado.",
+            "output": "Mensagens enviadas + estado da conversa atualizado (active/waiting_response).",
+            "record": "messages: insert; conversations: stage/intent/nextStep; socket events MESSAGE_NEW.",
+            "sla": "Imediato por item (depende rate limit).",
+            "exceptions": [
+                {
+                    "id": "EX-RATE-01",
+                    "title": "Rate limit/bloqueio do WhatsApp",
+                    "condition": "Plataforma limita envios ou sinaliza risco",
+                    "action": "Reduzir cadência, pausar fila, escalonar envios",
+                    "record": "logs backend + status de fila; (regra a confirmar)",
+                    "next": [
+                        "L1-05"
+                    ]
+                }
+            ],
+            "next": [
+                "L1-07"
+            ]
+        },
+        {
+            "id": "L1-07",
+            "lane": "Sistema (UI BotProspect)",
+            "title": "Monitorar Inbox (chat em tempo real)",
+            "what": "SDR acompanha respostas e estados via Socket.",
+            "trigger": "Lead responde OU eventos MESSAGE_NEW/WA_STATUS chegam.",
+            "action": "Abrir Prospecção > Inbox; visualizar conversa; identificar status e etapa.",
+            "output": "Operador decide: deixar bot seguir, ou assumir (takeover).",
+            "record": "conversations: status atual; messages: histórico; UI realtime.",
+            "sla": "Operacional (tempo de reação do SDR).",
+            "exceptions": [
+                {
+                    "id": "EX-UI-01",
+                    "title": "Ações placeholders na sidebar do chat",
+                    "condition": "Botões 'Enviar Playbook' e 'Mover no Kanban' sem função",
+                    "action": "SDR precisa executar manualmente em outra tela/processo",
+                    "record": "Risco de inconsistência (sem registro automático)",
+                    "next": [
+                        "L1-10"
+                    ]
+                }
+            ],
+            "next": [
+                "L1-08"
+            ]
+        },
+        {
+            "id": "L1-08",
+            "lane": "SDR/Operação Prospecção",
+            "title": "Takeover humano (Assumir conversa)",
+            "what": "Humano pausa o bot e responde diretamente.",
+            "trigger": "Lead pede humano OU bot não avança OU status vira 'Aguardando você'.",
+            "action": "Clicar 'Assumir' no chat; responder; conduzir para objetivo (ex.: reunião).",
+            "output": "Conversa em human_takeover; lead avançado para desfecho.",
+            "record": "conversations: human_takeover; messages: operador envia; audit trail (a confirmar).",
+            "sla": "Operacional (ideal: minutos).",
+            "exceptions": [
+                {
+                    "id": "EX-TO-01",
+                    "title": "Critério de takeover não claro",
+                    "condition": "Sistema marca waiting/human_takeover sem regra transparente",
+                    "action": "Operação define regra de triagem (intent/confiança/falha de step)",
+                    "record": "conversations: motivo de takeover (campo a criar, se não existir)",
+                    "next": [
+                        "L1-08"
+                    ]
+                }
+            ],
+            "next": [
+                "L1-09"
+            ]
+        },
+        {
+            "id": "L1-09",
+            "lane": "SDR/Operação Prospecção",
+            "title": "Registrar desfecho e concluir conversa",
+            "what": "Encerramento com outcome (ex.: 'Reunião marcada') via menu do chat.",
+            "trigger": "SDR conclui o atendimento/prospecção.",
+            "action": "No menu '...': selecionar desfecho; finalizar conversa; garantir dados de follow-up.",
+            "output": "Conversa em completed + outcome definido.",
+            "record": "conversations: completed + outcome; messages: histórico final; (tabela/campo do outcome a confirmar).",
+            "sla": "Imediato (ação do operador).",
+            "exceptions": [
+                {
+                    "id": "EX-OUT-01",
+                    "title": "Desfecho não sincroniza com Pipeline automaticamente",
+                    "condition": "Chat conclui, mas kanban /pipeline não move",
+                    "action": "Executar atualização manual no pipeline (fonte de verdade a definir)",
+                    "record": "pipeline: movimentação manual; risco de divergência",
+                    "next": [
+                        "L1-10"
+                    ]
+                }
+            ],
+            "next": [
+                "L1-10"
+            ]
+        },
+        {
+            "id": "L1-10",
+            "lane": "Pipeline/CRM (Kanban /pipeline)",
+            "title": "Pós-conversão: mover no Pipeline + auditoria/observabilidade",
+            "what": "Garantir que o resultado da prospecção vira etapa de funil e fica auditável.",
+            "trigger": "Conversa concluída OU lead qualificado.",
+            "action": "Abrir /pipeline e mover card para etapa correta (manual no AS-IS); checar logs (se existirem).",
+            "output": "Lead posicionado no funil; histórico preservado para gestão.",
+            "record": "pipeline: estágio atualizado; logs: atualmente mock/hardcoded na UI (risco).",
+            "sla": "Operacional (até o fim do turno).",
+            "exceptions": [
+                {
+                    "id": "EX-LOG-01",
+                    "title": "Logs de UI simulados/hardcoded",
+                    "condition": "Tela de logs não reflete eventos reais",
+                    "action": "Operação não deve usar logs UI como auditoria; usar logs backend/observabilidade real",
+                    "record": "Risco de decisão errada por falsa auditoria",
+                    "next": [
+                        "L1-10"
+                    ]
+                },
+                {
+                    "id": "EX-CAMP-01",
+                    "title": "Tela de Campanhas sem função",
+                    "condition": "Rota /campaigns 'Em desenvolvimento'",
+                    "action": "Não depender operacionalmente desta tela; documentar como não-escopo no AS-IS",
+                    "record": "Registro de não-função (status SEM FUNÇÃO)",
+                    "next": [
+                        "L1-10"
+                    ]
+                }
+            ],
+            "next": []
+        }
+    ],
+    "level2": [
+        {
+            "parent": "L1-03",
+            "id": "L2-OPTIN-01",
+            "lane": "Sistema (UI BotProspect)",
+            "title": "Bloqueio por falta de Opt-in (tratativa)",
+            "what": "Lead sem opt-in não pode ser disparado/enfileirado.",
+            "trigger": "Contato com opt-in inválido detectado em Contatos/validações.",
+            "action": "Bloquear fila; SDR decide estratégia externa para obter consentimento.",
+            "output": "Contato permanece bloqueado e fora da fila.",
+            "record": "contacts: blocked_optin + motivo (se existir).",
+            "sla": "Imediato.",
+            "exceptions": [],
+            "next": [
+                "L1-10"
+            ]
+        },
+        {
+            "parent": "L1-05",
+            "id": "L2-WA-01",
+            "lane": "WhatsApp Bridge (Z-API/Socket)",
+            "title": "Queda de conexão WhatsApp (paralisação operacional)",
+            "what": "Sem bridge conectada, fila pode rodar “no vazio” ou falhar.",
+            "trigger": "WA_STATUS indica desconexão.",
+            "action": "Operador pausa fila; admin revisa tokens/URL/env e restabelece instância.",
+            "output": "Retomada controlada da fila.",
+            "record": "whatsapp_status: disconnected/connected; logs backend.",
+            "sla": "Crítico (minutos).",
+            "exceptions": [],
+            "next": [
+                "L1-05"
+            ]
+        },
+        {
+            "parent": "L1-07",
+            "id": "L2-PLACEHOLDER-01",
+            "lane": "Sistema (UI BotProspect)",
+            "title": "Ações do Chat sem função (Enviar Playbook / Mover no Kanban)",
+            "what": "A UI promete ações que não executam nada (placeholders).",
+            "trigger": "SDR tenta usar botões na sidebar do chat.",
+            "action": "Registrar como limitação AS-IS; operação executa o equivalente fora do chat (manual).",
+            "output": "Evita expectativa falsa durante operação.",
+            "record": "N/A (limitação de interface) — documentar como risco.",
+            "sla": "N/A.",
+            "exceptions": [],
+            "next": [
+                "L1-10"
+            ]
+        },
+        {
+            "parent": "L1-09",
+            "id": "L2-PIPE-01",
+            "lane": "Pipeline/CRM (Kanban /pipeline)",
+            "title": "Desfecho no chat não move pipeline automaticamente",
+            "what": "Fonte de verdade do status (chat vs pipeline) está desconectada.",
+            "trigger": "SDR marca 'Reunião marcada' (ou outro desfecho) e conclui conversa.",
+            "action": "Mover manualmente o card no /pipeline; padronizar regra operacional de sincronização.",
+            "output": "Funil atualizado e consistente (via ação humana).",
+            "record": "pipeline: movimentação manual + (ideal) referência ao conversation_id.",
+            "sla": "Até o fim do turno (recomendado: imediato).",
+            "exceptions": [],
+            "next": [
+                "L1-10"
+            ]
+        },
+        {
+            "parent": "L1-10",
+            "id": "L2-LOG-01",
+            "lane": "Gestão/Admin (Config/Personas/Chaves)",
+            "title": "Observabilidade fraca: logs UI mock",
+            "what": "Tela de logs pode induzir erro (não auditável).",
+            "trigger": "Gestor tenta auditar incidentes via Logs UI.",
+            "action": "Usar logs reais do servidor/infra; marcar UI como 'preview' se mantida.",
+            "output": "Decisão baseada em evidência real.",
+            "record": "Logs backend/infra (fora da UI).",
+            "sla": "N/A.",
+            "exceptions": [],
+            "next": []
+        }
+    ],
+    "tour": [
+        "L1-01",
+        "L1-03",
+        "L1-04",
+        "L1-05",
+        "L1-06",
+        "L1-07",
+        "L1-08",
+        "L1-09",
+        "L1-10",
+        "L2-PIPE-01"
+    ],
+    "perguntas_validacao": [
+        "Existe algum processo de webhooks externos que alimenta o banco de contatos automaticamente (ex: Typeform, Facebook Leads)?",
+        "A integração com o CRM (Pipeline) ocorre no banco quando o status é 'meeting_scheduled' ou é 100% manual hoje?",
+        "O takeover para humano dispara alguma notificação externa (e-mail/WhatsApp para o SDR)?",
+        "Qual o critério técnico para o bot decidir o status 'human_takeover' (confiança/intent)?",
+        "Onde são configuradas as mensagens exatas (playbooks) enviadas pelo bot em cada uma das 5 etapas?",
+        "Como o sistema lida com rate limit do WhatsApp para evitar banimento?",
+        "Existe um local para ver histórico de logs reais do servidor (backend) além do mock na UI?",
+        "Os modelos locais (Ollama) citados na saúde do sistema já estão aptos para uso ou são visão de futuro?",
+        "Como o sistema detecta leads duplicados durante a importação de CSV (telefone ou e-mail)?",
+        "Existe suporte para envio de anexos (PDF/imagens) via automação do bot ou só chat manual?",
+        "O que dispara exatamente o estado 'Aguardando você': regra por intenção (intent) ou por falha de step?",
+        "Quando marca 'Reunião marcada', quais campos/tabelas são atualizados e qual é a fonte de verdade do status?"
+    ],
+    "riscos_escopo": [
+        "Diagnóstico atual é baseado em code audit; comportamento em produção/staging pode divergir (feature flags/build/rotas).",
+        "Tela de logs pode induzir erro porque exibe conteúdo mock/hardcoded (não auditável).",
+        "Dependência de WhatsApp Bridge (Z-API) sem redundância pode paralisar a prospecção em queda de instância.",
+        "Critério de dedupe na importação CSV não está confirmado (telefone vs e-mail).",
+        "Desconexão chat vs pipeline pode gerar inconsistência de etapa e perda de controle no pós-conversão.",
+        "Tela /campaigns é SEM FUNÇÃO: qualquer requisito de campanha avançada não é AS-IS e vira escopo novo."
+    ]
+}

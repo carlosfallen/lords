@@ -1,0 +1,43 @@
+Reading input file...
+Data section found around line -1
+Generated PBKDF2 hash for "Trocar@123"
+⚠️  Column count mismatch for leads: expected 35, got 32
+⚠️  Column count mismatch for leads: expected 35, got 32
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 8
+⚠️  Column count mismatch for lead_conversations: expected 11, got 7
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 7
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 7
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 7
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+⚠️  Column count mismatch for lead_conversations: expected 11, got 6
+✅ Done! Converted 1662 rows. Output: ./apps/cf-api/migrations/data_migration.sql

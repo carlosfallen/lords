@@ -1,0 +1,23 @@
+{
+  "name": "imperio-lord",
+  "private": true,
+  "workspaces": [
+    "apps/cf-api",
+    "apps/web",
+    "apps/web-rep",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run --filter '*' dev",
+    "dev:api": "bun run --filter api dev",
+    "dev:web": "bun run --filter web dev",
+    "build": "bun run --filter '*' build"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.6",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  }
+}

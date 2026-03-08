@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: imperio-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: imperio-web
+  template:
+    metadata:
+      labels:
+        app: imperio-web
+    spec:
+      containers:
+      - name: imperio-web
+        image: imperio-lord/web:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "64Mi"
+          limits:
+            cpu: "250m"
+            memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: imperio-web-svc
+spec:
+  selector:
+    app: imperio-web
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer

@@ -1,0 +1,10 @@
+.git
+.gitignore
+node_modules
+**/node_modules
+.bun-cache
+dist
+build
+.next
+.env
+*.log

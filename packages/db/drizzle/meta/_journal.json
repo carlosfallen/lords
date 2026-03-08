@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1771816199455,
+      "tag": "0000_tiny_celestials",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772254067580,
+      "tag": "0001_right_ares",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772467652754,
+      "tag": "0002_flat_vin_gonzales",
+      "breakpoints": true
+    }
+  ]
+}

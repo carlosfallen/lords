@@ -1,0 +1,24 @@
+{
+    "name": "api",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "bun run --watch src/index.ts",
+        "build": "bun build src/index.ts --outdir dist --target bun",
+        "start": "bun run dist/index.js"
+    },
+    "dependencies": {
+        "config": "workspace:*",
+        "db": "workspace:*",
+        "drizzle-orm": "^0.38.0",
+        "ioredis": "^5.9.3",
+        "jose": "^5.2.0",
+        "postgres": "^3.4.0",
+        "shared-types": "workspace:*"
+    },
+    "devDependencies": {
+        "typescript": "^5.4.0",
+        "@types/bun": "latest"
+    }
+}
